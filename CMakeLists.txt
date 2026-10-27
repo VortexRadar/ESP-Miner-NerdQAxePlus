@@ -44,10 +44,18 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(esp-miner)
 
 # Existing sdkconfig files override sdkconfig.defaults, including revoked roots.
-if(NOT CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
+if(NOT CONFIG_MBEDTLS_X509_TRUSTED_CERT_CALLBACK
+   OR NOT CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
    OR NOT CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_NONE
    OR NOT CONFIG_MBEDTLS_CUSTOM_CERTIFICATE_BUNDLE
    OR CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEPRECATED_LIST
    OR NOT CONFIG_MBEDTLS_CUSTOM_CERTIFICATE_BUNDLE_PATH STREQUAL "certificates/cacert-2026-10-20.pem")
     message(FATAL_ERROR "NerdQAxe requires its pinned CA bundle. Update the certificate bundle settings in sdkconfig to match sdkconfig.defaults; see certificates/README.md.")
+endif()
+
+# Refuse stale or hand-edited root arrays before compiling the application.
+execute_process(COMMAND "${PYTHON}" "${CMAKE_SOURCE_DIR}/tools/generate_real_roots.py" --check
+                RESULT_VARIABLE roots_check)
+if(NOT roots_check EQUAL 0)
+    message(FATAL_ERROR "Pinned real roots differ; regenerate with tools/generate_real_roots.py")
 endif()

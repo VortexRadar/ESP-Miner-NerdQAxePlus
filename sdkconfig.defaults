@@ -93,3 +93,6 @@ CONFIG_FREERTOS_WATCHPOINT_END_OF_STACK=y
 # Panic core dump capture is opt-in and lives in sdkconfig.coredump (layered on
 # via SDKCONFIG_DEFAULTS, see readme). Normal builds neither capture dumps to
 # flash nor compile in the download endpoint.
+
+# Native verification owns the bounded, per-lookup real root objects.
+CONFIG_MBEDTLS_X509_TRUSTED_CERT_CALLBACK=y

@@ -1,5 +1,6 @@
 idf_component_register(
 SRCS
+    "real_roots.c"
     "main.cpp"
     "nvs_config.cpp"
     "system.cpp"
