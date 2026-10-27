@@ -82,3 +82,6 @@ CONFIG_MBEDTLS_POLY1305_C=y
 # disable wdt at boot
 CONFIG_ESP_TASK_WDT_INIT=n
 
+
+# Native verification owns the bounded, per-lookup real root objects.
+CONFIG_MBEDTLS_X509_TRUSTED_CERT_CALLBACK=y
