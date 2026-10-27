@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check the pinned trust store and the published eMudhra incident chains offline."""
 
+import base64
 import argparse
 import hashlib
 import json
@@ -37,7 +38,7 @@ def check_build(build_dir, idf_path):
     require(idf_path, "--build-dir requires --idf-path or an exported IDF_PATH")
     config = json.loads((build_dir / "config/sdkconfig.json").read_text())
     for key in ("MBEDTLS_CERTIFICATE_BUNDLE", "MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_NONE",
-                "MBEDTLS_CUSTOM_CERTIFICATE_BUNDLE"):
+                "MBEDTLS_CUSTOM_CERTIFICATE_BUNDLE", "MBEDTLS_X509_TRUSTED_CERT_CALLBACK"):
         require(config.get(key) is True, f"Build must enable {key}")
     for key in ("MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL", "MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_CMN",
                 "MBEDTLS_CERTIFICATE_BUNDLE_DEPRECATED_LIST"):
@@ -51,9 +52,14 @@ def check_build(build_dir, idf_path):
         expected = (Path(temporary) / "x509_crt_bundle").read_bytes()
     actual = (build_dir / "esp-idf/mbedtls/x509_crt_bundle").read_bytes()
     require(actual == expected, "Generated trust store differs from the pinned CA bundle")
-    require(actual in (build_dir / "esp-miner.bin").read_bytes(),
-            "Firmware does not contain the expected trust store")
-    print(f"Firmware contains exactly the pinned trust store ({len(actual)} bytes)")
+    subprocess.run([sys.executable, str(ROOT / "tools/generate_real_roots.py"), "--check"], check=True)
+    image = (build_dir / "esp-miner.bin").read_bytes()
+    roots = [base64.b64decode(block) for block in re.findall(
+        rb"-----BEGIN CERTIFICATE-----\s*(.*?)-----END CERTIFICATE-----", BUNDLE.read_bytes(), re.S)]
+    require(len(roots) == 118 and len(set(roots)) == 118, "Expected 118 unique DER roots")
+    require(all(root in image for root in roots), "Firmware is missing an approved DER root")
+    require(actual not in image, "Firmware retains the unused compact trust payload")
+    print("Firmware embeds all 118 exact approved DER roots, without the unused compact payload")
 
 
 def main():
@@ -71,6 +77,7 @@ def main():
             "Pinned CA bundle checksum mismatch")
     require(hashlib.sha256(CHAINS.read_bytes()).hexdigest() == CHAINS_SHA256,
             "Incident test archive checksum mismatch")
+    subprocess.run([sys.executable, str(ROOT / "tools/generate_real_roots.py"), "--check"], check=True)
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     context.load_verify_locations(cafile=str(BUNDLE))
     require(context.cert_store_stats()["x509_ca"] == 118, "Expected 118 trusted roots")
