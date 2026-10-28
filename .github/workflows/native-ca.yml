@@ -1,0 +1,20 @@
+name: Native CA regression
+on: [pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  native-ca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch exact SDK and mbedTLS
+        run: |
+          git init "$RUNNER_TEMP/idf"
+          git -C "$RUNNER_TEMP/idf" remote add origin https://github.com/espressif/esp-idf.git
+          git -C "$RUNNER_TEMP/idf" fetch --depth 1 origin 79e3454c68248bd7d881721c9b2e94561378a8ce
+          git -C "$RUNNER_TEMP/idf" checkout --detach FETCH_HEAD
+          git -C "$RUNNER_TEMP/idf" submodule update --init --depth 1 components/mbedtls/mbedtls
+      - name: Run public offline tests
+        run: |
+          python3 tools/test_ca_bundle.py
+          python3 tools/native_ca_selection.py --idf-path "$RUNNER_TEMP/idf" --build-dir "$RUNNER_TEMP/native ca"
