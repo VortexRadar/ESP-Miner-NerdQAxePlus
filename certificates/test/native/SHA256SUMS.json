@@ -1,0 +1,10 @@
+{
+  "api.github.com-full.pem": "1e4b26a49fcc49d00a153df4b74d198ab1084ac8106bcc2ebbc396ca236e2236",
+  "attacker-full.pem": "ec782e03f3f48fda80eba69213634478cf62dde4955a96d841b627869bc1a808",
+  "bad-signature.pem": "b88d7a85d5f0166edfdc1e2b79150709ad43f148fb9b610765c07b9c4982219f",
+  "discord.com-full.pem": "0480f6fd5c13cac15315491968b96cd4bf1a6b75aa1449d26b8912fc3ac27477",
+  "discord.com-short.pem": "6f7217616944a8cf16ed576e254921113a9386a0ef02b99bdb423215106daf10",
+  "github.com-full.pem": "70afb0c092d7f0e42a580708e13f6df9d1b0354b327a423e5d942f82b9b14b65",
+  "mempool.space-full.pem": "52e1ad9e0a6807f0fe69050426c1336594bcb61e8b19c6388c4da89743cc072f",
+  "self.pem": "8c1a29e8e64f06d1a22d3e3d3cfa94ecb7e07057c4db653a4a1000d819b0c4a1"
+}

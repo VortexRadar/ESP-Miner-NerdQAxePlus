@@ -103,3 +103,12 @@ it neither builds nor flashes firmware. The generated data and helper are the
 same files compiled by the application. The name-equivalence seam is not a
 newly signed noncanonical certificate fixture. This focused selection test is
 not a claim of complete socket-handshake fault coverage.
+
+The native runner also verifies checksum-bound public certificate-only fixtures,
+wrong hostnames, altered signatures, self-signed peers and all incident chains.
+Archived native fixtures explicitly disable time checks, require the issuer
+rejection bit (not the fatal all-ones sentinel), and sweep reached allocations
+for wrong-host and altered-signature verification with zero residual ownership.
+Use a new build directory for each run. SDK and mbedTLS commits are pinned per
+lineage. The Linux workflow runs this same public runner; local Darwin execution
+is separate from hosted CI and complete transport fault coverage.
